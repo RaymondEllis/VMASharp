@@ -10,6 +10,7 @@ namespace VMASharp {
         public DedicatedAllocation(VulkanMemoryAllocator allocator, int memTypeIndex, DeviceMemory memory, SuballocationType suballocType, IntPtr mappedData, long size) : base(allocator, 0) {
             this.memory = memory;
             this.mappedData = mappedData;
+            this.size = size;
             memoryTypeIndex = memTypeIndex;
         }
 
