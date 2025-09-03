@@ -1,27 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Diagnostics;
-
 using Silk.NET.Vulkan;
+using VMASharp.Metadata;
 using Buffer = Silk.NET.Vulkan.Buffer;
 
-namespace VMASharp
-{
-    using Metadata;
+namespace VMASharp {
 
-    internal class VulkanMemoryBlock : IDisposable
-    {
-        private Vk VkApi => Allocator.VkApi;
+    internal class VulkanMemoryBlock : IDisposable {
 
         private readonly VulkanMemoryAllocator Allocator;
         internal readonly IBlockMetadata MetaData;
-        private readonly object SyncLock = new object();
+        private readonly object SyncLock = new();
         private int mapCount;
 
 
-        public VulkanMemoryBlock(VulkanMemoryAllocator allocator, VulkanMemoryPool? pool, int memoryTypeIndex, DeviceMemory memory, uint id, IBlockMetadata metaObject)
-        {
+        public VulkanMemoryBlock(VulkanMemoryAllocator allocator, VulkanMemoryPool? pool, int memoryTypeIndex, DeviceMemory memory, uint id, IBlockMetadata metaObject) {
             Allocator = allocator;
             ParentPool = pool;
             MemoryTypeIndex = memoryTypeIndex;
@@ -30,6 +23,8 @@ namespace VMASharp
 
             MetaData = metaObject;
         }
+
+        private Vk VkApi => Allocator.VkApi;
 
         public VulkanMemoryPool? ParentPool { get; }
 
@@ -41,132 +36,109 @@ namespace VMASharp
 
         public IntPtr MappedData { get; private set; }
 
-        public void Dispose()
-        {
-            if (!this.MetaData.IsEmpty)
-            {
+        public void Dispose() {
+            if (!MetaData.IsEmpty) {
                 throw new InvalidOperationException("Some allocations were not freed before destruction of this memory block!");
             }
 
-            Debug.Assert(this.DeviceMemory.Handle != default);
+            Debug.Assert(DeviceMemory.Handle != default);
 
-            this.Allocator.FreeVulkanMemory(this.MemoryTypeIndex, this.MetaData.Size, this.DeviceMemory);
+            Allocator.FreeVulkanMemory(MemoryTypeIndex, MetaData.Size, DeviceMemory);
         }
 
         [Conditional("DEBUG")]
-        public void Validate()
-        {
-            Helpers.Validate(this.DeviceMemory.Handle != default && this.MetaData.Size > 0);
+        public void Validate() {
+            Helpers.Validate(DeviceMemory.Handle != default && MetaData.Size > 0);
 
             MetaData.Validate();
         }
 
-        public void CheckCorruption(VulkanMemoryAllocator allocator)
-        {
-            var data = this.Map(1);
+        public void CheckCorruption(VulkanMemoryAllocator allocator) {
+            var data = Map(1);
 
-            try
-            {
-                this.MetaData.CheckCorruption((nuint)(nint)data);
+            try {
+                MetaData.CheckCorruption((nuint)(nint)data);
             }
-            finally
-            {
-                this.Unmap(1);
+            finally {
+                Unmap(1);
             }
         }
 
-        public unsafe IntPtr Map(int count)
-        {
-            if (count < 0)
-            {
+        public unsafe IntPtr Map(int count) {
+            if (count < 0) {
                 throw new ArgumentOutOfRangeException(nameof(count));
             }
 
-            lock (this.SyncLock)
-            {
-                Debug.Assert(this.mapCount >= 0);
+            lock (SyncLock) {
+                Debug.Assert(mapCount >= 0);
 
-                if (this.mapCount > 0)
-                {
-                    Debug.Assert(this.MappedData != default);
+                if (mapCount > 0) {
+                    Debug.Assert(MappedData != default);
 
-                    this.mapCount += count;
-                    return this.MappedData;
+                    mapCount += count;
+                    return MappedData;
                 }
-                else
-                {
-                    if (count == 0)
-                    {
-                        return default;
-                    }
 
-                    IntPtr pData;
-                    var res = VkApi.MapMemory(this.Allocator.Device, this.DeviceMemory, 0, Vk.WholeSize, 0, (void**)&pData);
-
-                    if (res != Result.Success)
-                    {
-                        throw new MapMemoryException(res);
-                    }
-
-                    this.mapCount = count;
-                    this.MappedData = pData;
-
-                    return pData;
+                if (count == 0) {
+                    return default;
                 }
+
+                IntPtr pData;
+                var res = VkApi.MapMemory(Allocator.Device, DeviceMemory, 0, Vk.WholeSize, MemoryMapFlags.None, (void**)&pData);
+
+                if (res != Result.Success) {
+                    throw new MapMemoryException(res);
+                }
+
+                mapCount = count;
+                MappedData = pData;
+
+                return pData;
             }
         }
 
-        public void Unmap(int count)
-        {
-            if (count == 0)
-            {
+        public void Unmap(int count) {
+            if (count == 0) {
                 return;
             }
 
-            lock (this.SyncLock)
-            {
-                int newCount = this.mapCount - count;
+            lock (SyncLock) {
+                var newCount = mapCount - count;
 
-                if (newCount < 0)
-                {
+                if (newCount < 0) {
                     throw new InvalidOperationException("Memory block is being unmapped while it was not previously mapped");
                 }
 
-                this.mapCount = newCount;
-                
-                if (newCount == 0)
-                {
-                    this.MappedData = default;
-                    VkApi.UnmapMemory(this.Allocator.Device, this.DeviceMemory);
+                mapCount = newCount;
+
+                if (newCount == 0) {
+                    MappedData = default;
+                    VkApi.UnmapMemory(Allocator.Device, DeviceMemory);
                 }
             }
         }
 
-        public unsafe Result BindBufferMemory(Allocation allocation, long allocationLocalOffset, Buffer buffer, void* pNext)
-        {
+        public unsafe Result BindBufferMemory(Allocation allocation, long allocationLocalOffset, Buffer buffer, void* pNext) {
             Debug.Assert(allocation is BlockAllocation blockAlloc && blockAlloc.Block == this);
 
             Debug.Assert((ulong)allocationLocalOffset < (ulong)allocation.Size, "Invalid allocationLocalOffset. Did you forget that this offset is relative to the beginning of the allocation, not the whole memory block?");
 
-            long memoryOffset = allocationLocalOffset + allocation.Offset;
+            var memoryOffset = allocationLocalOffset + allocation.Offset;
 
-            lock (SyncLock)
-            {
-                return this.Allocator.BindVulkanBuffer(buffer, this.DeviceMemory, memoryOffset, pNext);
+            lock (SyncLock) {
+                return Allocator.BindVulkanBuffer(buffer, DeviceMemory, memoryOffset, pNext);
             }
         }
 
-        public unsafe Result BindImageMemory(Allocation allocation, long allocationLocalOffset, Image image, void* pNext)
-        {
+        public unsafe Result BindImageMemory(Allocation allocation, long allocationLocalOffset, Image image, void* pNext) {
             Debug.Assert(allocation is BlockAllocation blockAlloc && blockAlloc.Block == this);
 
             Debug.Assert((ulong)allocationLocalOffset < (ulong)allocation.Size, "Invalid allocationLocalOffset. Did you forget that this offset is relative to the beginning of the allocation, not the whole memory block?");
 
-            long memoryOffset = allocationLocalOffset + allocation.Offset;
+            var memoryOffset = allocationLocalOffset + allocation.Offset;
 
-            lock (this.SyncLock)
-            {
-                return this.Allocator.BindVulkanImage(image, this.DeviceMemory, memoryOffset, pNext);
+            lock (SyncLock) {
+                return Allocator.BindVulkanImage(image, DeviceMemory, memoryOffset, pNext);
             }
         }
     }

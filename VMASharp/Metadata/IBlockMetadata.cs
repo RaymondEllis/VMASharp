@@ -1,38 +1,35 @@
-﻿namespace VMASharp.Metadata
-{
+﻿namespace VMASharp.Metadata {
     /// <summary>
-    /// Allocation book-keeping for individual Device Memory Blocks. 
+    ///     Allocation book-keeping for individual Device Memory Blocks.
     /// </summary>
-    public interface IBlockMetadata
-    {
+    public interface IBlockMetadata {
         /// <summary>
-        /// Must return the total block size
+        ///     Must return the total block size
         /// </summary>
         long Size { get; }
 
         /// <summary>
-        /// Number of allocations held in this block
+        ///     Number of allocations held in this block
         /// </summary>
         int AllocationCount { get; }
 
         /// <summary>
-        /// Total free bytes in this block
+        ///     Total free bytes in this block
         /// </summary>
         long SumFreeSize { get; }
 
         /// <summary>
-        /// 
         /// </summary>
         long UnusedRangeSizeMax { get; }
 
         /// <summary>
-        /// Does this block have 0 allocations?
+        ///     Does this block have 0 allocations?
         /// </summary>
         bool IsEmpty { get; }
 
         /// <summary>
-        /// Validates all data structures inside this object. Throws an exception if validation fails.
-        /// Only called in Debug builds of VMASharp
+        ///     Validates all data structures inside this object. Throws an exception if validation fails.
+        ///     Only called in Debug builds of VMASharp
         /// </summary>
         void Validate();
 
@@ -41,9 +38,9 @@
         void AddPoolStats(ref PoolStats stats);
 
         /// <summary>
-        /// Tries to find a place for suballocation with given parameters inside this block.
-        /// If succeeded, fills pAllocationRequest and returns true.
-        /// If failed, returns false.
+        ///     Tries to find a place for suballocation with given parameters inside this block.
+        ///     If succeeded, fills pAllocationRequest and returns true.
+        ///     If failed, returns false.
         /// </summary>
         /// <param name="context">Contextual information for this allocation request</param>
         /// <param name="request"></param>

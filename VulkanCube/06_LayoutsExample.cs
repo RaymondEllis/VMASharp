@@ -1,90 +1,73 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Silk.NET.Vulkan;
+using VMASharp;
 
-using Silk.NET.Vulkan;
+namespace VulkanCube; 
 
-namespace VulkanCube
-{
-    /// <summary>
-    /// 
-    /// </summary>
-    public unsafe abstract class LayoutsExample : AllocatorAndBuffersExample
-    {
-        protected readonly DescriptorSetLayout[] DescriptorSetLayouts;
-        protected readonly PipelineLayout GraphicsPipelineLayout;
+/// <summary>
+/// </summary>
+public abstract unsafe class LayoutsExample : AllocatorAndBuffersExample {
+    protected readonly DescriptorSetLayout[] DescriptorSetLayouts;
+    protected readonly PipelineLayout GraphicsPipelineLayout;
 
-        protected LayoutsExample() : base()
-        {
-            DescriptorSetLayouts = CreateDescriptorSetLayouts();
+    protected LayoutsExample() {
+        DescriptorSetLayouts = CreateDescriptorSetLayouts();
 
-            GraphicsPipelineLayout = CreatePipelineLayout();
+        GraphicsPipelineLayout = CreatePipelineLayout();
 
-            //VkApi.descriptors
+        //VkApi.descriptors
+    }
+
+    public override void Dispose() {
+        VkApi.DestroyPipelineLayout(Device, GraphicsPipelineLayout, null);
+
+        foreach (var layout in DescriptorSetLayouts) {
+            VkApi.DestroyDescriptorSetLayout(Device, layout, null);
         }
 
-        public override void Dispose()
-        {
-            VkApi.DestroyPipelineLayout(this.Device, GraphicsPipelineLayout, null);
+        base.Dispose();
+    }
 
-            foreach (var layout in DescriptorSetLayouts)
-            {
-                VkApi.DestroyDescriptorSetLayout(this.Device, layout, null);
-            }
+    private DescriptorSetLayout[] CreateDescriptorSetLayouts() {
+        var binding = new DescriptorSetLayoutBinding {
+            Binding = 0,
+            DescriptorType = DescriptorType.UniformBuffer,
+            DescriptorCount = 1,
+            StageFlags = ShaderStageFlags.ShaderStageVertexBit
+        };
 
-            base.Dispose();
+        var createInfo = new DescriptorSetLayoutCreateInfo {
+            SType = StructureType.DescriptorSetLayoutCreateInfo,
+            BindingCount = 1,
+            PBindings = &binding
+        };
+
+        DescriptorSetLayout layout;
+        var res = VkApi.CreateDescriptorSetLayout(Device, &createInfo, null, &layout);
+
+        if (res != Result.Success) {
+            throw new VulkanResultException("Failed to create Descriptor Set Layout!", res);
         }
 
-        private DescriptorSetLayout[] CreateDescriptorSetLayouts()
-        {
-            DescriptorSetLayoutBinding binding = new DescriptorSetLayoutBinding
-            {
-                Binding = 0,
-                DescriptorType = DescriptorType.UniformBuffer,
-                DescriptorCount = 1,
-                StageFlags = ShaderStageFlags.ShaderStageVertexBit
-            };
+        return new[] { layout };
+    }
 
-            DescriptorSetLayoutCreateInfo createInfo = new DescriptorSetLayoutCreateInfo
-            {
-                SType = StructureType.DescriptorSetLayoutCreateInfo,
-                BindingCount = 1,
-                PBindings = &binding
-            };
+    private PipelineLayout CreatePipelineLayout() {
+        var createInfo = new PipelineLayoutCreateInfo {
+            SType = StructureType.PipelineLayoutCreateInfo
+        };
 
-            DescriptorSetLayout layout;
-            var res = VkApi.CreateDescriptorSetLayout(this.Device, &createInfo, null, &layout);
+        fixed (DescriptorSetLayout* pLayouts = DescriptorSetLayouts) {
+            createInfo.SetLayoutCount = (uint)DescriptorSetLayouts.Length;
+            createInfo.PSetLayouts = pLayouts;
 
-            if (res != Result.Success)
-            {
-                throw new VMASharp.VulkanResultException("Failed to create Descriptor Set Layout!", res);
+            PipelineLayout pipelineLayout;
+            var res = VkApi.CreatePipelineLayout(Device, &createInfo, null, &pipelineLayout);
+
+            if (res != Result.Success) {
+                throw new VulkanResultException("Failed to create Pipeline Layout!", res);
             }
 
-            return new[] { layout };
-        }
-
-        private PipelineLayout CreatePipelineLayout()
-        {
-            PipelineLayoutCreateInfo createInfo = new PipelineLayoutCreateInfo
-            {
-                SType = StructureType.PipelineLayoutCreateInfo
-            };
-
-            fixed (DescriptorSetLayout* pLayouts = this.DescriptorSetLayouts)
-            {
-                createInfo.SetLayoutCount = (uint)this.DescriptorSetLayouts.Length;
-                createInfo.PSetLayouts = pLayouts;
-
-                PipelineLayout pipelineLayout;
-                var res = VkApi.CreatePipelineLayout(this.Device, &createInfo, null, &pipelineLayout);
-
-                if (res != Result.Success)
-                {
-                    throw new VMASharp.VulkanResultException("Failed to create Pipeline Layout!", res);
-                }
-
-                return pipelineLayout;
-            }
+            return pipelineLayout;
         }
     }
 }

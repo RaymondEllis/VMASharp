@@ -1,15 +1,14 @@
 ﻿using System;
 using Silk.NET.Core;
 using Silk.NET.Vulkan;
+using VMASharp.Metadata;
 
 #pragma warning disable CA1815
 
-namespace VMASharp
-{
-    public struct VulkanMemoryAllocatorCreateInfo
-    {
+namespace VMASharp {
+    public struct VulkanMemoryAllocatorCreateInfo {
         /// <summary>
-        /// Flags for created allocator
+        ///     Flags for created allocator
         /// </summary>
         public AllocatorCreateFlags Flags;
 
@@ -30,13 +29,12 @@ namespace VMASharp
         public int FrameInUseCount;
 
         public VulkanMemoryAllocatorCreateInfo(Version32 vulkanApiVersion,
-                                               Vk vulkanApiObject,
-                                               Instance instance, PhysicalDevice physicalDevice, Device logicalDevice,
-                                               AllocatorCreateFlags flags = default,
-                                               long preferredLargeHeapBlockSize = 0,
-                                               long[]? heapSizeLimits = null,
-                                               int frameInUseCount = 0)
-        {
+            Vk vulkanApiObject,
+            Instance instance, PhysicalDevice physicalDevice, Device logicalDevice,
+            AllocatorCreateFlags flags = default,
+            long preferredLargeHeapBlockSize = 0,
+            long[]? heapSizeLimits = null,
+            int frameInUseCount = 0) {
             Flags = flags;
             VulkanAPIVersion = vulkanApiVersion;
             VulkanAPIObject = vulkanApiObject;
@@ -49,8 +47,7 @@ namespace VMASharp
         }
     }
 
-    public struct AllocationCreateInfo
-    {
+    public struct AllocationCreateInfo {
         public AllocationCreateFlags Flags;
 
         public AllocationStrategyFlags Strategy;
@@ -68,14 +65,13 @@ namespace VMASharp
         public object? UserData;
 
         public AllocationCreateInfo(AllocationCreateFlags flags = default,
-                                    AllocationStrategyFlags strategy = default,
-                                    MemoryUsage usage = default,
-                                    MemoryPropertyFlags requiredFlags = default,
-                                    MemoryPropertyFlags preferredFlags = default,
-                                    uint memoryTypeBits = 0,
-                                    VulkanMemoryPool? pool = null,
-                                    object? userData = null)
-        {
+            AllocationStrategyFlags strategy = default,
+            MemoryUsage usage = default,
+            MemoryPropertyFlags requiredFlags = default,
+            MemoryPropertyFlags preferredFlags = default,
+            uint memoryTypeBits = 0,
+            VulkanMemoryPool? pool = null,
+            object? userData = null) {
             Flags = flags;
             Strategy = strategy;
             Usage = usage;
@@ -87,10 +83,9 @@ namespace VMASharp
         }
     }
 
-    public struct AllocationPoolCreateInfo
-    {
+    public struct AllocationPoolCreateInfo {
         /// <summary>
-        /// Memory type index to allocate from, non-optional
+        ///     Memory type index to allocate from, non-optional
         /// </summary>
         public int MemoryTypeIndex;
 
@@ -104,16 +99,15 @@ namespace VMASharp
 
         public int FrameInUseCount;
 
-        public Func<long, Metadata.IBlockMetadata>? AllocationAlgorithmCreate;
+        public Func<long, IBlockMetadata>? AllocationAlgorithmCreate;
 
         public AllocationPoolCreateInfo(int memoryTypeIndex,
-                                        PoolCreateFlags flags = 0,
-                                        long blockSize = 0,
-                                        int minBlockCount = 0,
-                                        int maxBlockCount = 0,
-                                        int frameInUseCount = 0,
-                                        Func<long, Metadata.IBlockMetadata>? allocationAlgorithemCreate = null)
-        {
+            PoolCreateFlags flags = 0,
+            long blockSize = 0,
+            int minBlockCount = 0,
+            int maxBlockCount = 0,
+            int frameInUseCount = 0,
+            Func<long, IBlockMetadata>? allocationAlgorithemCreate = null) {
             MemoryTypeIndex = memoryTypeIndex;
             Flags = flags;
             BlockSize = blockSize;
@@ -124,8 +118,7 @@ namespace VMASharp
         }
     }
 
-    public struct AllocationContext
-    {
+    public struct AllocationContext {
         public int CurrentFrame, FrameInUseCount;
         public long BufferImageGranularity;
         public long AllocationSize;
@@ -134,8 +127,7 @@ namespace VMASharp
         public SuballocationType SuballocationType;
         public bool CanMakeOtherLost;
 
-        public AllocationContext(int currentFrame, int framesInUse, long bufferImageGranularity, long allocationSize, long allocationAlignment, AllocationStrategyFlags strategy, SuballocationType suballocType, bool canMakeOtherLost)
-        {
+        public AllocationContext(int currentFrame, int framesInUse, long bufferImageGranularity, long allocationSize, long allocationAlignment, AllocationStrategyFlags strategy, SuballocationType suballocType, bool canMakeOtherLost) {
             CurrentFrame = currentFrame;
             FrameInUseCount = framesInUse;
             BufferImageGranularity = bufferImageGranularity;
@@ -147,8 +139,7 @@ namespace VMASharp
         }
     }
 
-    public struct AllocationRequest
-    {
+    public struct AllocationRequest {
         public const long LostAllocationCost = 1048576;
 
         public long Offset, SumFreeSize, SumItemSize;
@@ -159,9 +150,8 @@ namespace VMASharp
         public object CustomData;
 
         public AllocationRequestType Type;
-        
-        public readonly long CalcCost()
-        {
+
+        public readonly long CalcCost() {
             return SumItemSize + ItemsToMakeLostCount * LostAllocationCost;
         }
     }

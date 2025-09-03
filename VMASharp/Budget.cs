@@ -1,22 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Runtime.CompilerServices;
 using System.Diagnostics;
-
+using System.Threading;
 using Silk.NET.Vulkan;
 
-namespace VMASharp
-{
-    public struct AllocationBudget
-    {
+namespace VMASharp {
+    public struct AllocationBudget {
         public long BlockBytes;
         public long AllocationBytes;
         public long Usage;
         public long Budget;
 
-        public AllocationBudget(long blockBytes, long allocationBytes, long usage, long budget)
-        {
+        public AllocationBudget(long blockBytes, long allocationBytes, long usage, long budget) {
             BlockBytes = blockBytes;
             AllocationBytes = allocationBytes;
             Usage = usage;
@@ -24,40 +18,31 @@ namespace VMASharp
         }
     }
 
-    internal class CurrentBudgetData
-    {
+    internal class CurrentBudgetData {
         public readonly InternalBudgetStruct[] BudgetData = new InternalBudgetStruct[Vk.MaxMemoryHeaps];
-        public readonly ReaderWriterLockSlim BudgetMutex = new ReaderWriterLockSlim();
+        public readonly ReaderWriterLockSlim BudgetMutex = new();
         public int OperationsSinceBudgetFetch;
 
-        public CurrentBudgetData()
-        {
-        }
-
-        public void AddAllocation(int heapIndex, long allocationSize)
-        {
-            if ((uint)heapIndex >= Vk.MaxMemoryHeaps)
-            {
+        public void AddAllocation(int heapIndex, long allocationSize) {
+            if ((uint)heapIndex >= Vk.MaxMemoryHeaps) {
                 throw new ArgumentOutOfRangeException(nameof(heapIndex));
             }
 
-            Interlocked.Add(ref this.BudgetData[heapIndex].AllocationBytes, allocationSize);
-            Interlocked.Increment(ref this.OperationsSinceBudgetFetch);
+            Interlocked.Add(ref BudgetData[heapIndex].AllocationBytes, allocationSize);
+            Interlocked.Increment(ref OperationsSinceBudgetFetch);
         }
 
-        public void RemoveAllocation(int heapIndex, long allocationSize)
-        {
-            ref InternalBudgetStruct heap = ref BudgetData[heapIndex];
+        public void RemoveAllocation(int heapIndex, long allocationSize) {
+            ref var heap = ref BudgetData[heapIndex];
 
             Debug.Assert(heap.AllocationBytes >= allocationSize);
 
             Interlocked.Add(ref heap.AllocationBytes, -allocationSize); //Subtraction
 
-            Interlocked.Increment(ref this.OperationsSinceBudgetFetch);
+            Interlocked.Increment(ref OperationsSinceBudgetFetch);
         }
 
-        internal struct InternalBudgetStruct
-        {
+        internal struct InternalBudgetStruct {
             public long BlockBytes;
             public long AllocationBytes;
             public long VulkanUsage;

@@ -1,43 +1,28 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Threading;
 using System.Runtime.CompilerServices;
-
+using System.Threading;
 using Silk.NET.Vulkan;
-using VMASharp;
 
-namespace VMASharp
-{
-    public sealed class VulkanMemoryPool : IDisposable
-    {
-        public VulkanMemoryAllocator Allocator { get; }
-
-        private Vk VkApi => Allocator.VkApi;
-
-
-        public string Name { get; set; }
-
-        internal uint ID { get; }
+namespace VMASharp {
+    public sealed class VulkanMemoryPool : IDisposable {
 
         internal readonly BlockList BlockList;
 
-        internal VulkanMemoryPool(VulkanMemoryAllocator allocator, in AllocationPoolCreateInfo poolInfo, long preferredBlockSize)
-        {
-            if (allocator is null)
-            {
+        internal VulkanMemoryPool(VulkanMemoryAllocator allocator, in AllocationPoolCreateInfo poolInfo, long preferredBlockSize) {
+            if (allocator is null) {
                 throw new ArgumentNullException(nameof(allocator));
             }
 
-            this.Allocator = allocator;
+            Allocator = allocator;
 
-            ref int tmpRef = ref Unsafe.As<uint, int>(ref allocator.NextPoolID);
+            ref var tmpRef = ref Unsafe.As<uint, int>(ref allocator.NextPoolID);
 
-            this.ID = (uint)Interlocked.Increment(ref tmpRef);
+            ID = (uint)Interlocked.Increment(ref tmpRef);
 
-            if (this.ID == 0)
+            if (ID == 0)
                 throw new OverflowException();
 
-            this.BlockList = new BlockList(
+            BlockList = new BlockList(
                 allocator,
                 this,
                 poolInfo.MemoryTypeIndex,
@@ -49,26 +34,31 @@ namespace VMASharp
                 poolInfo.BlockSize != 0,
                 poolInfo.AllocationAlgorithmCreate ?? Helpers.DefaultMetaObjectCreate);
 
-            this.BlockList.CreateMinBlocks();
+            BlockList.CreateMinBlocks();
         }
 
-        public void Dispose()
-        {
+        public VulkanMemoryAllocator Allocator { get; }
+
+        private Vk VkApi => Allocator.VkApi;
+
+
+        public string Name { get; set; }
+
+        internal uint ID { get; }
+
+        public void Dispose() {
             Allocator.DestroyPool(this);
         }
 
-        public int MakeAllocationsLost()
-        {
+        public int MakeAllocationsLost() {
             return Allocator.MakePoolAllocationsLost(this);
         }
 
-        public Result CheckForCorruption()
-        {
+        public Result CheckForCorruption() {
             return Allocator.CheckPoolCorruption(this);
         }
 
-        public void GetPoolStats(out PoolStats stats)
-        {
+        public void GetPoolStats(out PoolStats stats) {
             Allocator.GetPoolStats(this, out stats);
         }
     }

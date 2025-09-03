@@ -1,52 +1,43 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-
 using Silk.NET.Vulkan;
+using VMASharp;
 
-namespace VulkanCube
-{
-    public unsafe abstract class ShaderModulesExample : RenderPassExample
-    {
-        protected ShaderModule VertexShader, FragmentShader;
+namespace VulkanCube; 
 
-        public ShaderModulesExample() : base()
-        {
-            VertexShader = LoadShaderModule("../../../vert.spv");
-            FragmentShader = LoadShaderModule("../../../frag.spv");
-        }
+public abstract unsafe class ShaderModulesExample : RenderPassExample {
+    protected ShaderModule VertexShader, FragmentShader;
 
-        public override void Dispose()
-        {
-            VkApi.DestroyShaderModule(this.Device, VertexShader, null);
-            VkApi.DestroyShaderModule(this.Device, FragmentShader, null);
+    public ShaderModulesExample() {
+        VertexShader = LoadShaderModule("../../../vert.spv");
+        FragmentShader = LoadShaderModule("../../../frag.spv");
+    }
 
-            base.Dispose();
-        }
+    public override void Dispose() {
+        VkApi.DestroyShaderModule(Device, VertexShader, null);
+        VkApi.DestroyShaderModule(Device, FragmentShader, null);
 
-        private ShaderModule LoadShaderModule(string filename)
-        {
-            byte[] data = File.ReadAllBytes(filename);
+        base.Dispose();
+    }
 
-            fixed (byte* pData = data)
-            {
-                ShaderModuleCreateInfo createInfo = new ShaderModuleCreateInfo
-                {
-                    SType = StructureType.ShaderModuleCreateInfo,
-                    CodeSize = new UIntPtr((uint)data.Length),
-                    PCode = (uint*)pData
-                };
+    private ShaderModule LoadShaderModule(string filename) {
+        var data = File.ReadAllBytes(filename);
 
-                ShaderModule module;
-                var res = VkApi.CreateShaderModule(this.Device, &createInfo, null, &module);
+        fixed (byte* pData = data) {
+            var createInfo = new ShaderModuleCreateInfo {
+                SType = StructureType.ShaderModuleCreateInfo,
+                CodeSize = new UIntPtr((uint)data.Length),
+                PCode = (uint*)pData
+            };
 
-                if (res != Result.Success)
-                {
-                    throw new VMASharp.VulkanResultException("Failed to create Shader Module!", res);
-                }
+            ShaderModule module;
+            var res = VkApi.CreateShaderModule(Device, &createInfo, null, &module);
 
-                return module;
+            if (res != Result.Success) {
+                throw new VulkanResultException("Failed to create Shader Module!", res);
             }
+
+            return module;
         }
     }
 }
