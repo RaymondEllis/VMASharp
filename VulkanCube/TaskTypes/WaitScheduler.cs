@@ -1,179 +1,204 @@
-﻿using System;
+﻿using Silk.NET.Vulkan;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Silk.NET.Vulkan;
 
-namespace VulkanCube.TaskTypes; 
+namespace VulkanCube.TaskTypes;
 
-public class WaitScheduler : IDisposable {
+public class WaitScheduler : IDisposable
+{
 
-    private readonly Device _device;
+	private readonly Device _device;
 
-    private readonly ConcurrentQueue<(Fence, TaskCompletionSource)> _fenceQueue = new();
+	private readonly ConcurrentQueue<(Fence, TaskCompletionSource)> _fenceQueue = new();
 
-    private readonly Thread _schedulerThread;
+	private readonly Thread _schedulerThread;
 
-    private volatile int _state;
+	private volatile int _state;
 
-    public WaitScheduler(Device device) {
-        _device = device;
+	public WaitScheduler(Device device)
+	{
+		_device = device;
 
-        _schedulerThread = new Thread(ScheduleThreadMethod);
-        _schedulerThread.Start();
-    }
+		_schedulerThread = new Thread(ScheduleThreadMethod);
+		_schedulerThread.Start();
+	}
 
-    private static Vk VkApi => InstanceCreationExample.VkApi;
+	private static Vk VkApi => InstanceCreationExample.VkApi;
 
-    public void Dispose() {
-        _state = 1;
+	public void Dispose()
+	{
+		_state = 1;
 
-        _schedulerThread.Join();
-    }
+		_schedulerThread.Join();
+	}
 
-    public Task WaitForFenceAsync(Fence fence) {
-        var res = VkApi.GetFenceStatus(_device, fence);
+	public Task WaitForFenceAsync(Fence fence)
+	{
+		var res = VkApi.GetFenceStatus(_device, fence);
 
-        switch (res) {
-            case Result.Success:
-                return Task.CompletedTask;
-            case Result.NotReady:
-                CheckState();
+		switch (res)
+		{
+			case Result.Success:
+				return Task.CompletedTask;
+			case Result.NotReady:
+				CheckState();
 
-                var tcs = new TaskCompletionSource();
+				var tcs = new TaskCompletionSource();
 
-                _fenceQueue.Enqueue((fence, tcs));
+				_fenceQueue.Enqueue((fence, tcs));
 
-                return tcs.Task;
-            default:
-                throw new Exception(res.ToString());
-        }
-    }
+				return tcs.Task;
+			default:
+				throw new Exception(res.ToString());
+		}
+	}
 
-    private void CheckState() {
-        var tmp = _state;
+	private void CheckState()
+	{
+		var tmp = _state;
 
-        if (tmp != 0) {
-            throw new InvalidOperationException($"{(Result)tmp}");
-        }
-    }
+		if (tmp != 0)
+		{
+			throw new InvalidOperationException($"{(Result)tmp}");
+		}
+	}
 
-    private unsafe void ScheduleThreadMethod() {
-        var list = new UnmanagedList<Fence>(64);
-        var taskList = new List<TaskCompletionSource>(64);
-        Result res;
+	private unsafe void ScheduleThreadMethod()
+	{
+		var list = new UnmanagedList<Fence>(64);
+		var taskList = new List<TaskCompletionSource>(64);
+		Result res;
 
-        while (_state == 0) {
-            while (_fenceQueue.TryDequeue(out var tuple)) {
-                var (fence, tcs) = tuple;
+		while (_state == 0)
+		{
+			while (_fenceQueue.TryDequeue(out var tuple))
+			{
+				var (fence, tcs) = tuple;
 
-                res = VkApi.GetFenceStatus(_device, fence);
+				res = VkApi.GetFenceStatus(_device, fence);
 
-                switch (res) {
-                    case Result.Success:
-                        tcs.SetResult();
-                        break;
-                    case Result.NotReady:
-                        list.Add(fence);
-                        taskList.Add(tcs);
-                        break;
-                    default:
-                        tcs.SetException(new Exception("VkGetFenceStatus() returned " + res));
-                        break;
-                }
-            }
+				switch (res)
+				{
+					case Result.Success:
+						tcs.SetResult();
+						break;
+					case Result.NotReady:
+						list.Add(fence);
+						taskList.Add(tcs);
+						break;
+					default:
+						tcs.SetException(new Exception("VkGetFenceStatus() returned " + res));
+						break;
+				}
+			}
 
-            if (list.Count == 0) {
-                Thread.Sleep(1);
-                continue;
-            }
+			if (list.Count == 0)
+			{
+				Thread.Sleep(1);
+				continue;
+			}
 
-            res = VkApi.WaitForFences(_device, (uint)list.Count, list.BasePointer, false, 5 * 1_000_000);
+			res = VkApi.WaitForFences(_device, (uint)list.Count, list.BasePointer, false, 5 * 1_000_000);
 
-            switch (res) {
-                case Result.Timeout:
-                    break;
-                case Result.Success:
+			switch (res)
+			{
+				case Result.Timeout:
+					break;
+				case Result.Success:
 
-                    for (var i = 0; i < list.Count;) {
-                        var fence = list[i];
-                        var source = taskList[i];
+					for (var i = 0; i < list.Count;)
+					{
+						var fence = list[i];
+						var source = taskList[i];
 
-                        res = VkApi.GetFenceStatus(_device, fence);
+						res = VkApi.GetFenceStatus(_device, fence);
 
-                        if (res != Result.NotReady) {
-                            list.RemoveAt(i);
-                            taskList.RemoveAt(i);
+						if (res != Result.NotReady)
+						{
+							list.RemoveAt(i);
+							taskList.RemoveAt(i);
 
-                            if (res == Result.Success) {
-                                source.SetResult();
-                            }
-                            else {
-                                source.SetException(new Exception("VkGetFenceStatus() returned " + res));
-                            }
+							if (res == Result.Success)
+							{
+								source.SetResult();
+							}
+							else
+							{
+								source.SetException(new Exception("VkGetFenceStatus() returned " + res));
+							}
 
-                            continue; //Skip index increment
-                        }
+							continue; //Skip index increment
+						}
 
-                        i += 1;
-                    }
+						i += 1;
+					}
 
-                    break;
-                default:
-                    _state = (int)res;
+					break;
+				default:
+					_state = (int)res;
 
-                    var resMessage = "Unhandled Error: " + res;
+					var resMessage = "Unhandled Error: " + res;
 
-                    foreach (var source in taskList) {
-                        source.SetException(new Exception(resMessage));
-                    }
+					foreach (var source in taskList)
+					{
+						source.SetException(new Exception(resMessage));
+					}
 
-                    break;
-            }
-        }
-    }
+					break;
+			}
+		}
+	}
 
-    private struct UnmanagedList<T> where T : unmanaged {
-        private T[] _array;
+	private struct UnmanagedList<T> where T : unmanaged
+	{
+		private T[] _array;
 
-        public UnmanagedList(int capacity) {
-            _array = GC.AllocateArray<T>(capacity, true);
-            Count = 0;
-        }
+		public UnmanagedList(int capacity)
+		{
+			_array = GC.AllocateArray<T>(capacity, true);
+			Count = 0;
+		}
 
-        public int Count { get; private set; }
+		public int Count { get; private set; }
 
-        public unsafe T* BasePointer => (T*)Unsafe.AsPointer(ref MemoryMarshal.GetArrayDataReference(_array));
+		public unsafe T* BasePointer => (T*)Unsafe.AsPointer(ref MemoryMarshal.GetArrayDataReference(_array));
 
-        public T this[int idx] => _array[idx];
+		public T this[int idx] => _array[idx];
 
-        public void Add(T item) {
-            if (Count >= _array.Length) {
-                var newlen = _array.Length * 2;
+		public void Add(T item)
+		{
+			if (Count >= _array.Length)
+			{
+				var newlen = _array.Length * 2;
 
-                var newArr = GC.AllocateArray<T>(newlen, true);
+				var newArr = GC.AllocateArray<T>(newlen, true);
 
-                Array.Copy(_array, newArr, _array.Length);
+				Array.Copy(_array, newArr, _array.Length);
 
-                _array = newArr;
-            }
+				_array = newArr;
+			}
 
-            _array[Count++] = item;
-        }
+			_array[Count++] = item;
+		}
 
-        public void RemoveAt(int idx) {
-            if ((uint)idx >= (uint)Count) {
-                throw new IndexOutOfRangeException();
-            }
+		public void RemoveAt(int idx)
+		{
+			if ((uint)idx >= (uint)Count)
+			{
+				throw new IndexOutOfRangeException();
+			}
 
-            if (idx != Count - 1) {
-                Array.Copy(_array, idx + 1, _array, idx, Count - idx - 1);
-            }
+			if (idx != Count - 1)
+			{
+				Array.Copy(_array, idx + 1, _array, idx, Count - idx - 1);
+			}
 
-            Count -= 1;
-        }
-    }
+			Count -= 1;
+		}
+	}
 }

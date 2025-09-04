@@ -1,52 +1,60 @@
 ﻿using Silk.NET.Vulkan;
 using VMASharp;
 
-namespace VulkanCube; 
+namespace VulkanCube;
 
-public abstract unsafe class FrameBuffersExample : ShaderModulesExample {
-    protected readonly Framebuffer[] FrameBuffers;
+public abstract unsafe class FrameBuffersExample : ShaderModulesExample
+{
+	protected readonly Framebuffer[] FrameBuffers;
 
-    protected FrameBuffersExample() {
-        FrameBuffers = CreateFrameBuffers();
-    }
+	protected FrameBuffersExample()
+	{
+		FrameBuffers = CreateFrameBuffers();
+	}
 
-    public override void Dispose() {
-        foreach (var fb in FrameBuffers) {
-            VkApi.DestroyFramebuffer(Device, fb, null);
-        }
+	public override void Dispose()
+	{
+		foreach (var fb in FrameBuffers)
+		{
+			VkApi.DestroyFramebuffer(Device, fb, null);
+		}
 
-        base.Dispose();
-    }
+		base.Dispose();
+	}
 
-    private Framebuffer[] CreateFrameBuffers() {
-        var attachments = stackalloc ImageView[2] { default, DepthBuffer.View };
+	private Framebuffer[] CreateFrameBuffers()
+	{
+		var attachments = stackalloc ImageView[2] { default, DepthBuffer.View };
 
-        var createInfo = new FramebufferCreateInfo {
-            SType = StructureType.FramebufferCreateInfo,
-            RenderPass = RenderPass,
-            AttachmentCount = 2,
-            PAttachments = attachments,
-            Width = SwapchainExtent.Width,
-            Height = SwapchainExtent.Height,
-            Layers = 1
-        };
+		var createInfo = new FramebufferCreateInfo
+		{
+			SType = StructureType.FramebufferCreateInfo,
+			RenderPass = RenderPass,
+			AttachmentCount = 2,
+			PAttachments = attachments,
+			Width = SwapchainExtent.Width,
+			Height = SwapchainExtent.Height,
+			Layers = 1
+		};
 
-        var arr = new Framebuffer[SwapchainImages.Length];
+		var arr = new Framebuffer[SwapchainImages.Length];
 
-        for (var i = 0; i < arr.Length; ++i) {
-            attachments[0] = SwapchainImages[i].View;
+		for (var i = 0; i < arr.Length; ++i)
+		{
+			attachments[0] = SwapchainImages[i].View;
 
-            Framebuffer tmp;
+			Framebuffer tmp;
 
-            var res = VkApi.CreateFramebuffer(Device, &createInfo, null, &tmp);
+			var res = VkApi.CreateFramebuffer(Device, &createInfo, null, &tmp);
 
-            if (res != Result.Success) {
-                throw new VulkanResultException("Failed to create Shader Module!", res);
-            }
+			if (res != Result.Success)
+			{
+				throw new VulkanResultException("Failed to create Shader Module!", res);
+			}
 
-            arr[i] = tmp;
-        }
+			arr[i] = tmp;
+		}
 
-        return arr;
-    }
+		return arr;
+	}
 }

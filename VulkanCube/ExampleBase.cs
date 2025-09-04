@@ -1,10 +1,11 @@
 ﻿#pragma warning disable CA1063
 using System;
 
-namespace VulkanCube; 
+namespace VulkanCube;
 
-public abstract class ExampleBase : IDisposable {
+public abstract class ExampleBase : IDisposable
+{
 
-    public abstract void Dispose();
-    public abstract void Run();
+	public abstract void Dispose();
+	public abstract void Run();
 }
