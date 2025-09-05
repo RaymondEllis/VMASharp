@@ -23,7 +23,7 @@ public abstract unsafe class CommandPoolCreationExample : SwapchainCreationExamp
 	private CommandPool CreateCommandPool()
 	{
 		var poolCreateInfo = new CommandPoolCreateInfo(
-			flags: CommandPoolCreateFlags.CommandPoolCreateResetCommandBufferBit,
+			flags: CommandPoolCreateFlags.ResetCommandBufferBit,
 			queueFamilyIndex: QueueIndices.GraphicsFamily.Value);
 
 		CommandPool pool;

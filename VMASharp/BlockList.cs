@@ -644,11 +644,11 @@ internal class BlockList : IDisposable
 			AllocationSize = (ulong)blockSize
 		};
 
-		// Every standalone block can potentially contain a buffer with BufferUsageFlags.BufferUsageShaderDeviceAddressBitKhr - always enable the feature
+		// Every standalone block can potentially contain a buffer with BufferUsageFlags.ShaderDeviceAddressBitKhr - always enable the feature
 		var allocFlagsInfo = new MemoryAllocateFlagsInfoKHR(StructureType.MemoryAllocateFlagsInfoKhr);
 		if (Allocator.UseKhrBufferDeviceAddress)
 		{
-			allocFlagsInfo.Flags = MemoryAllocateFlags.MemoryAllocateDeviceAddressBitKhr;
+			allocFlagsInfo.Flags = MemoryAllocateFlags.AddressBitKhr;
 			info.PNext = &allocFlagsInfo;
 		}
 

@@ -55,7 +55,7 @@ public abstract unsafe class SwapchainCreationExample : DeviceCreationExample
 			ImageColorSpace = surfaceFormat.ColorSpace,
 			ImageExtent = extent,
 			ImageArrayLayers = 1,
-			ImageUsage = ImageUsageFlags.ImageUsageColorAttachmentBit
+			ImageUsage = ImageUsageFlags.ColorAttachmentBit
 		};
 
 		if (QueueIndices.GraphicsFamily != QueueIndices.PresentFamily)
@@ -73,7 +73,7 @@ public abstract unsafe class SwapchainCreationExample : DeviceCreationExample
 		}
 
 		createInfo.PreTransform = details.Capabilities.CurrentTransform;
-		createInfo.CompositeAlpha = CompositeAlphaFlagsKHR.CompositeAlphaOpaqueBitKhr;
+		createInfo.CompositeAlpha = CompositeAlphaFlagsKHR.OpaqueBitKhr;
 		createInfo.PresentMode = presentMode;
 		createInfo.Clipped = true;
 
@@ -109,7 +109,7 @@ public abstract unsafe class SwapchainCreationExample : DeviceCreationExample
 		var viewCreateInfo = new ImageViewCreateInfo
 		{
 			SType = StructureType.ImageViewCreateInfo,
-			ViewType = ImageViewType.ImageViewType2D,
+			ViewType = ImageViewType.Type2D,
 			Format = surfaceFormat.Format,
 			Components = {
 				R = ComponentSwizzle.Identity,
@@ -118,7 +118,7 @@ public abstract unsafe class SwapchainCreationExample : DeviceCreationExample
 				A = ComponentSwizzle.Identity
 			},
 			SubresourceRange = {
-				AspectMask = ImageAspectFlags.ImageAspectColorBit,
+				AspectMask = ImageAspectFlags.ColorBit,
 				BaseMipLevel = 0,
 				LevelCount = 1,
 				BaseArrayLayer = 0,
@@ -227,9 +227,9 @@ public abstract unsafe class SwapchainCreationExample : DeviceCreationExample
 
 	private PresentModeKHR ChooseSwapPresentMode(PresentModeKHR[] presentModes)
 	{
-		var i = Array.FindIndex(presentModes, availablePresentMode => availablePresentMode == PresentModeKHR.PresentModeMailboxKhr);
+		var i = Array.FindIndex(presentModes, availablePresentMode => availablePresentMode == PresentModeKHR.MailboxKhr);
 
-		return i < 0 ? PresentModeKHR.PresentModeFifoKhr : PresentModeKHR.PresentModeMailboxKhr;
+		return i < 0 ? PresentModeKHR.FifoKhr : PresentModeKHR.MailboxKhr;
 	}
 
 	private Extent2D ChooseSwapExtent(in SurfaceCapabilitiesKHR capabilities)

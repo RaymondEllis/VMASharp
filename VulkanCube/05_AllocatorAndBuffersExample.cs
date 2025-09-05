@@ -113,15 +113,15 @@ public abstract class AllocatorAndBuffersExample : CommandPoolCreationExample
 		CreateHostBufferWithContent<ushort>(indexData, out var hostBuffer2, out var hostAlloc2);
 		CreateHostBufferWithContent<InstanceData>(instanceData, out var hostBuffer3, out var hostAlloc3);
 
-		CreateDeviceLocalBuffer(BufferUsageFlags.BufferUsageVertexBufferBit, GetByteLength(positionData), out VertexBuffer, out VertexAllocation);
-		CreateDeviceLocalBuffer(BufferUsageFlags.BufferUsageIndexBufferBit, GetByteLength(indexData), out IndexBuffer, out IndexAllocation);
-		CreateDeviceLocalBuffer(BufferUsageFlags.BufferUsageVertexBufferBit, GetByteLength(instanceData), out InstanceBuffer, out InstanceAllocation);
+		CreateDeviceLocalBuffer(BufferUsageFlags.VertexBufferBit, GetByteLength(positionData), out VertexBuffer, out VertexAllocation);
+		CreateDeviceLocalBuffer(BufferUsageFlags.IndexBufferBit, GetByteLength(indexData), out IndexBuffer, out IndexAllocation);
+		CreateDeviceLocalBuffer(BufferUsageFlags.VertexBufferBit, GetByteLength(instanceData), out InstanceBuffer, out InstanceAllocation);
 
 		var cbuffer = AllocateCommandBuffer(CommandBufferLevel.Primary);
 
 		var copies = stackalloc BufferCopy[1];
 
-		BeginCommandBuffer(cbuffer, CommandBufferUsageFlags.CommandBufferUsageOneTimeSubmitBit);
+		BeginCommandBuffer(cbuffer, CommandBufferUsageFlags.OneTimeSubmitBit);
 
 		copies[0] = new BufferCopy(0, 0, GetByteLength(positionData));
 		VkApi.CmdCopyBuffer(cbuffer, hostBuffer1, VertexBuffer, 1, copies);
@@ -175,7 +175,7 @@ public abstract class AllocatorAndBuffersExample : CommandPoolCreationExample
 	private unsafe void CreateHostBufferWithContent<T>(ReadOnlySpan<T> span, out Buffer buffer, out Allocation alloc) where T : unmanaged
 	{
 		BufferCreateInfo bufferInfo = new(
-			usage: BufferUsageFlags.BufferUsageTransferSrcBit,
+			usage: BufferUsageFlags.TransferSrcBit,
 			size: (uint)Unsafe.SizeOf<T>() * (uint)span.Length);
 
 		AllocationCreateInfo allocInfo = new(AllocationCreateFlags.Mapped, usage: MemoryUsage.CPU_Only);
@@ -193,7 +193,7 @@ public abstract class AllocatorAndBuffersExample : CommandPoolCreationExample
 	private unsafe void CreateDeviceLocalBuffer(BufferUsageFlags usage, uint size, out Buffer buffer, out Allocation alloc)
 	{
 		BufferCreateInfo bufferInfo = new(
-			usage: usage | BufferUsageFlags.BufferUsageTransferDstBit,
+			usage: usage | BufferUsageFlags.TransferDstBit,
 			size: size);
 
 		AllocationCreateInfo allocInfo = new(usage: MemoryUsage.GPU_Only);
@@ -207,14 +207,14 @@ public abstract class AllocatorAndBuffersExample : CommandPoolCreationExample
 		{
 			SType = StructureType.BufferCreateInfo,
 			Size = UniformBufferSize,
-			Usage = BufferUsageFlags.BufferUsageUniformBufferBit,
+			Usage = BufferUsageFlags.UniformBufferBit,
 			SharingMode = SharingMode.Exclusive
 		};
 
 		// Allow this to be updated every frame
 		var allocInfo = new AllocationCreateInfo(
 			usage: MemoryUsage.CPU_To_GPU,
-			requiredFlags: MemoryPropertyFlags.MemoryPropertyHostVisibleBit);
+			requiredFlags: MemoryPropertyFlags.HostVisibleBit);
 
 		// Binds buffer to allocation for you
 		var buffer = Allocator.CreateBuffer(in bufferInfo, in allocInfo, out var allocation);
@@ -247,14 +247,14 @@ public abstract class AllocatorAndBuffersExample : CommandPoolCreationExample
 		var depthInfo = new ImageCreateInfo
 		{
 			SType = StructureType.ImageCreateInfo,
-			ImageType = ImageType.ImageType2D,
+			ImageType = ImageType.Type2D,
 			Format = DepthFormat,
 			Extent = new Extent3D(SwapchainExtent.Width, SwapchainExtent.Height, 1),
 			MipLevels = 1,
 			ArrayLayers = 1,
-			Samples = SampleCountFlags.SampleCount1Bit,
+			Samples = SampleCountFlags.Count1Bit,
 			InitialLayout = ImageLayout.Undefined,
-			Usage = ImageUsageFlags.ImageUsageDepthStencilAttachmentBit,
+			Usage = ImageUsageFlags.DepthStencilAttachmentBit,
 			SharingMode = SharingMode.Exclusive
 		};
 
@@ -263,8 +263,8 @@ public abstract class AllocatorAndBuffersExample : CommandPoolCreationExample
 			SType = StructureType.ImageViewCreateInfo,
 			Format = DepthFormat,
 			Components = new ComponentMapping(ComponentSwizzle.R, ComponentSwizzle.G, ComponentSwizzle.B, ComponentSwizzle.A),
-			SubresourceRange = new ImageSubresourceRange(ImageAspectFlags.ImageAspectDepthBit, levelCount: 1, layerCount: 1),
-			ViewType = ImageViewType.ImageViewType2D
+			SubresourceRange = new ImageSubresourceRange(ImageAspectFlags.DepthBit, levelCount: 1, layerCount: 1),
+			ViewType = ImageViewType.Type2D
 		};
 
 		var allocInfo = new AllocationCreateInfo(usage: MemoryUsage.GPU_Only);
@@ -290,7 +290,7 @@ public abstract class AllocatorAndBuffersExample : CommandPoolCreationExample
 
 	protected unsafe Fence CreateFence(bool initialState = false)
 	{
-		var info = new FenceCreateInfo(flags: initialState ? FenceCreateFlags.FenceCreateSignaledBit : 0);
+		var info = new FenceCreateInfo(flags: initialState ? FenceCreateFlags.SignaledBit : 0);
 
 		Fence fence;
 		var res = VkApi.CreateFence(Device, &info, null, &fence);

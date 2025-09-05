@@ -25,7 +25,7 @@ public abstract unsafe class RenderPassExample : DescriptorSetExample
             //Color Attachment
             new AttachmentDescription {
 				Format = SwapchainImageFormat,
-				Samples = SampleCountFlags.SampleCount1Bit,
+				Samples = SampleCountFlags.Count1Bit,
 				LoadOp = AttachmentLoadOp.Clear,
 				StoreOp = AttachmentStoreOp.Store,
 				StencilLoadOp = AttachmentLoadOp.DontCare,
@@ -37,7 +37,7 @@ public abstract unsafe class RenderPassExample : DescriptorSetExample
             //Depth Attachment
             new AttachmentDescription {
 				Format = DepthFormat,
-				Samples = SampleCountFlags.SampleCount1Bit,
+				Samples = SampleCountFlags.Count1Bit,
 				LoadOp = AttachmentLoadOp.Clear,
 				StoreOp = AttachmentStoreOp.DontCare,
 				StencilLoadOp = AttachmentLoadOp.DontCare,
@@ -63,10 +63,10 @@ public abstract unsafe class RenderPassExample : DescriptorSetExample
 		{
 			SrcSubpass = Vk.SubpassExternal,
 			DstSubpass = 0,
-			SrcStageMask = PipelineStageFlags.PipelineStageColorAttachmentOutputBit,
+			SrcStageMask = PipelineStageFlags.ColorAttachmentOutputBit,
 			SrcAccessMask = 0,
-			DstStageMask = PipelineStageFlags.PipelineStageColorAttachmentOutputBit,
-			DstAccessMask = AccessFlags.AccessColorAttachmentReadBit | AccessFlags.AccessColorAttachmentWriteBit
+			DstStageMask = PipelineStageFlags.ColorAttachmentOutputBit,
+			DstAccessMask = AccessFlags.ColorAttachmentReadBit | AccessFlags.ColorAttachmentWriteBit
 		};
 
 		var renderPassInfo = new RenderPassCreateInfo

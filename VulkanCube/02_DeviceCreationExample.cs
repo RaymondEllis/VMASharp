@@ -151,7 +151,7 @@ public abstract unsafe class DeviceCreationExample : InstanceCreationExample
 		{
 			ref var queueFamily = ref families[i];
 
-			const QueueFlags GraphicsQueueBits = QueueFlags.QueueGraphicsBit | QueueFlags.QueueTransferBit;
+			const QueueFlags GraphicsQueueBits = QueueFlags.GraphicsBit | QueueFlags.TransferBit;
 
 			if ((queueFamily.QueueFlags & GraphicsQueueBits) == GraphicsQueueBits)
 			{

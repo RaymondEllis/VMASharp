@@ -58,7 +58,7 @@ public abstract unsafe class DescriptorSetExample : LayoutsExample
 			MaxSets = 1,
 			PoolSizeCount = 1,
 			PPoolSizes = &typeCount,
-			Flags = DescriptorPoolCreateFlags.DescriptorPoolCreateFreeDescriptorSetBit
+			Flags = DescriptorPoolCreateFlags.FreeDescriptorSetBit
 		};
 
 		DescriptorPool pool;

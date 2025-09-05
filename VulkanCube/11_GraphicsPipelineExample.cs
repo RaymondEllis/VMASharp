@@ -28,14 +28,14 @@ public abstract unsafe class GraphicsPipelineExample : FrameBuffersExample
 		var shaderStages = stackalloc PipelineShaderStageCreateInfo[2] {
 			new PipelineShaderStageCreateInfo {
 				SType = StructureType.PipelineShaderStageCreateInfo,
-				Stage = ShaderStageFlags.ShaderStageVertexBit,
+				Stage = ShaderStageFlags.VertexBit,
 				Module = VertexShader,
 				PName = (byte*)pName
 			},
 
 			new PipelineShaderStageCreateInfo {
 				SType = StructureType.PipelineShaderStageCreateInfo,
-				Stage = ShaderStageFlags.ShaderStageFragmentBit,
+				Stage = ShaderStageFlags.FragmentBit,
 				Module = FragmentShader,
 				PName = (byte*)pName
 			}
@@ -92,7 +92,7 @@ public abstract unsafe class GraphicsPipelineExample : FrameBuffersExample
 			RasterizerDiscardEnable = Vk.False,
 			PolygonMode = PolygonMode.Fill,
 			LineWidth = 1.0f,
-			CullMode = CullModeFlags.CullModeNone,
+			CullMode = CullModeFlags.None,
 			FrontFace = FrontFace.Clockwise,
 			DepthBiasEnable = Vk.False
 		};
@@ -101,15 +101,15 @@ public abstract unsafe class GraphicsPipelineExample : FrameBuffersExample
 		{
 			SType = StructureType.PipelineMultisampleStateCreateInfo,
 			SampleShadingEnable = false,
-			RasterizationSamples = SampleCountFlags.SampleCount1Bit
+			RasterizationSamples = SampleCountFlags.Count1Bit
 		};
 
 		var colorBlendAttachment = new PipelineColorBlendAttachmentState
 		{
-			ColorWriteMask = ColorComponentFlags.ColorComponentRBit |
-							 ColorComponentFlags.ColorComponentGBit |
-							 ColorComponentFlags.ColorComponentBBit |
-							 ColorComponentFlags.ColorComponentABit,
+			ColorWriteMask = ColorComponentFlags.RBit |
+							 ColorComponentFlags.GBit |
+							 ColorComponentFlags.BBit |
+							 ColorComponentFlags.ABit,
 			BlendEnable = Vk.False
 		};
 

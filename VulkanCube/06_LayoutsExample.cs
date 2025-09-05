@@ -38,7 +38,7 @@ public abstract unsafe class LayoutsExample : AllocatorAndBuffersExample
 			Binding = 0,
 			DescriptorType = DescriptorType.UniformBuffer,
 			DescriptorCount = 1,
-			StageFlags = ShaderStageFlags.ShaderStageVertexBit
+			StageFlags = ShaderStageFlags.VertexBit
 		};
 
 		var createInfo = new DescriptorSetLayoutCreateInfo

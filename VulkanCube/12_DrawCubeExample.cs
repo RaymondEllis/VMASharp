@@ -86,7 +86,7 @@ public sealed unsafe class DrawCubeExample : GraphicsPipelineExample
 		var waitSemaphore = ctx.ImageAvailable;
 		var signalSemaphore = ctx.RenderFinished; //This semaphore will be used to synchronize presentation of the rendered image.
 
-		var waitStages = PipelineStageFlags.PipelineStageColorAttachmentOutputBit;
+		var waitStages = PipelineStageFlags.ColorAttachmentOutputBit;
 
 		var buffer = RecordPrimaryCommandBuffer(ctx.CmdBuffer, (int)nextImage); //Records primary command buffer on the fly
 
@@ -160,7 +160,7 @@ public sealed unsafe class DrawCubeExample : GraphicsPipelineExample
 
 		var inherit = new CommandBufferInheritanceInfo(renderPass: RenderPass, subpass: 0);
 
-		const CommandBufferUsageFlags usageFlags = CommandBufferUsageFlags.CommandBufferUsageRenderPassContinueBit | CommandBufferUsageFlags.CommandBufferUsageSimultaneousUseBit;
+		const CommandBufferUsageFlags usageFlags = CommandBufferUsageFlags.RenderPassContinueBit | CommandBufferUsageFlags.SimultaneousUseBit;
 
 		var DrawCommandBuffer = SecondaryCommandBuffers[0];
 
@@ -239,7 +239,7 @@ public sealed unsafe class DrawCubeExample : GraphicsPipelineExample
 			PClearValues = clearValues
 		};
 
-		BeginCommandBuffer(primary, CommandBufferUsageFlags.CommandBufferUsageOneTimeSubmitBit);
+		BeginCommandBuffer(primary, CommandBufferUsageFlags.OneTimeSubmitBit);
 
 		VkApi.CmdBeginRenderPass(primary, &renderPassInfo, SubpassContents.SecondaryCommandBuffers);
 
