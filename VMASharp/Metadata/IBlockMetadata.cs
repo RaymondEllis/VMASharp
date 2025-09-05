@@ -52,8 +52,6 @@ public interface IBlockMetadata
 
 	int MakeAllocationsLost(int currentFrame, int frameInUseCount);
 
-	void CheckCorruption(nuint blockDataPointer);
-
 	void Alloc(in AllocationRequest request, SuballocationType type, long allocSize, BlockAllocation allocation);
 
 	void Free(BlockAllocation allocation);

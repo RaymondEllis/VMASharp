@@ -6,7 +6,6 @@ using System.Runtime.CompilerServices;
 namespace VMASharp.Metadata;
 internal sealed class BlockMetadata_Generic : IBlockMetadata
 {
-
 	private readonly List<LinkedListNode<Suballocation>> freeSuballocationsBySize = new();
 
 	private readonly LinkedList<Suballocation> suballocations = new();
@@ -104,11 +103,6 @@ internal sealed class BlockMetadata_Generic : IBlockMetadata
 		}
 
 		SumFreeSize -= allocSize;
-	}
-
-	public void CheckCorruption(nuint blockDataPointer)
-	{
-		throw new NotImplementedException();
 	}
 
 	public bool TryCreateAllocationRequest(in AllocationContext context, out AllocationRequest request)

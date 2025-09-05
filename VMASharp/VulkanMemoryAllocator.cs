@@ -7,7 +7,6 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
-using VMASharp.Defragmentation;
 using Buffer = Silk.NET.Vulkan.Buffer;
 
 namespace VMASharp;
@@ -390,11 +389,6 @@ public sealed unsafe class VulkanMemoryAllocator : IDisposable
 		}
 
 		return alloc;
-	}
-
-	public Result CheckCorruption(uint memoryTypeBits)
-	{
-		throw new NotImplementedException();
 	}
 
 	public Buffer CreateBuffer(in BufferCreateInfo bufferInfo, in AllocationCreateInfo allocInfo, out Allocation allocation)
@@ -861,26 +855,6 @@ public sealed unsafe class VulkanMemoryAllocator : IDisposable
 		}
 	}
 
-	internal Result DefragmentationBegin(in DefragmentationInfo2 info, DefragmentationStats stats, DefragmentationContext context)
-	{
-		throw new NotImplementedException();
-	}
-
-	internal Result DefragmentationEnd(DefragmentationContext context)
-	{
-		throw new NotImplementedException();
-	}
-
-	internal Result DefragmentationPassBegin(ref DefragmentationPassMoveInfo[] passInfo, DefragmentationContext context)
-	{
-		throw new NotImplementedException();
-	}
-
-	internal Result DefragmentationPassEnd(DefragmentationContext context)
-	{
-		throw new NotImplementedException();
-	}
-
 	public VulkanMemoryPool CreatePool(in AllocationPoolCreateInfo createInfo)
 	{
 		var tmpCreateInfo = createInfo;
@@ -939,16 +913,6 @@ public sealed unsafe class VulkanMemoryAllocator : IDisposable
 	internal int MakePoolAllocationsLost(VulkanMemoryPool pool)
 	{
 		return pool.BlockList.MakePoolAllocationsLost(CurrentFrame);
-	}
-
-	internal Result CheckPoolCorruption(VulkanMemoryPool pool)
-	{
-		throw new NotImplementedException();
-	}
-
-	internal Allocation CreateLostAllocation()
-	{
-		throw new NotImplementedException();
 	}
 
 	internal Result AllocateVulkanMemory(in MemoryAllocateInfo allocInfo, out DeviceMemory memory)
@@ -1047,18 +1011,6 @@ public sealed unsafe class VulkanMemoryAllocator : IDisposable
 
 			allocation.Unmap();
 		}
-	}
-
-	internal uint GetGPUDefragmentationMemoryTypeBits()
-	{
-		var memTypeBits = GPUDefragmentationMemoryTypeBits;
-		if (memTypeBits == uint.MaxValue)
-		{
-			memTypeBits = CalculateGpuDefragmentationMemoryTypeBits();
-			GPUDefragmentationMemoryTypeBits = memTypeBits;
-		}
-
-		return memTypeBits;
 	}
 
 	private long CalcPreferredBlockSize(int memTypeIndex)
@@ -1253,11 +1205,6 @@ public sealed unsafe class VulkanMemoryAllocator : IDisposable
 		}
 
 		FreeVulkanMemory(allocation.MemoryTypeIndex, allocation.Size, allocation.DeviceMemory);
-	}
-
-	private uint CalculateGpuDefragmentationMemoryTypeBits()
-	{
-		throw new NotImplementedException();
 	}
 
 	private uint CalculateGlobalMemoryTypeBits()

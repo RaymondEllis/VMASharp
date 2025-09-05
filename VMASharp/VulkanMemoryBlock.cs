@@ -58,20 +58,6 @@ internal class VulkanMemoryBlock : IDisposable
 		MetaData.Validate();
 	}
 
-	public void CheckCorruption(VulkanMemoryAllocator allocator)
-	{
-		var data = Map(1);
-
-		try
-		{
-			MetaData.CheckCorruption((nuint)(nint)data);
-		}
-		finally
-		{
-			Unmap(1);
-		}
-	}
-
 	public unsafe IntPtr Map(int count)
 	{
 		if (count < 0)

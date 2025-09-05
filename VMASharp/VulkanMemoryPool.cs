@@ -6,7 +6,6 @@ using System.Threading;
 namespace VMASharp;
 public sealed class VulkanMemoryPool : IDisposable
 {
-
 	internal readonly BlockList BlockList;
 
 	internal VulkanMemoryPool(VulkanMemoryAllocator allocator, in AllocationPoolCreateInfo poolInfo, long preferredBlockSize)
@@ -45,7 +44,7 @@ public sealed class VulkanMemoryPool : IDisposable
 	private Vk VkApi => Allocator.VkApi;
 
 
-	public string Name { get; set; }
+	public string? Name { get; set; }
 
 	internal uint ID { get; }
 
@@ -57,11 +56,6 @@ public sealed class VulkanMemoryPool : IDisposable
 	public int MakeAllocationsLost()
 	{
 		return Allocator.MakePoolAllocationsLost(this);
-	}
-
-	public Result CheckForCorruption()
-	{
-		return Allocator.CheckPoolCorruption(this);
 	}
 
 	public void GetPoolStats(out PoolStats stats)

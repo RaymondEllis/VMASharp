@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using VMASharp.Defragmentation;
 using VMASharp.Metadata;
 
 namespace VMASharp;
@@ -273,11 +272,6 @@ internal class BlockList : IDisposable
 		{
 			mutex.ExitWriteLock();
 		}
-	}
-
-	public Result CheckCorruption()
-	{
-		throw new NotImplementedException();
 	}
 
 	public int CalcAllocationCount()
@@ -673,32 +667,6 @@ internal class BlockList : IDisposable
 		newBlockIndex = blocks.Count - 1;
 
 		return Result.Success;
-	}
-
-	private void FreeEmptyBlocks(ref DefragmentationStats stats)
-	{
-		for (var i = blocks.Count - 1; i >= 0; --i)
-		{
-			var block = blocks[i];
-
-			if (block.MetaData.IsEmpty)
-			{
-				if (blocks.Count > minBlockCount)
-				{
-					stats.DeviceMemoryBlocksFreed += 1;
-					stats.BytesFreed += block.MetaData.Size;
-
-					blocks.RemoveAt(i);
-					block.Dispose();
-				}
-				else
-				{
-					break;
-				}
-			}
-		}
-
-		UpdateHasEmptyBlock();
 	}
 
 	private void UpdateHasEmptyBlock()
