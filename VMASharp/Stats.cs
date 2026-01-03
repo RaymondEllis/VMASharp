@@ -1,6 +1,7 @@
 ﻿using Silk.NET.Vulkan;
 
 namespace VMASharp;
+
 public struct StatInfo
 {
 	public int BlockCount, AllocationCount, UnusedRangeCount;

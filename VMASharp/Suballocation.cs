@@ -1,4 +1,5 @@
 ﻿namespace VMASharp;
+
 internal struct Suballocation
 {
 	public long Offset, Size;

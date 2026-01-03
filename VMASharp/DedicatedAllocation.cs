@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 
 namespace VMASharp;
+
 internal class DedicatedAllocation : Allocation
 {
 	internal IntPtr mappedData;

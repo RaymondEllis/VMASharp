@@ -7,6 +7,7 @@ using System.Numerics;
 using VMASharp.Metadata;
 
 namespace VMASharp;
+
 internal static class Helpers
 {
 	public const long MinFreeSuballocationSizeToRegister = 16;

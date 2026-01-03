@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 
 namespace VMASharp;
+
 public sealed class VulkanMemoryPool : IDisposable
 {
 	internal readonly BlockList BlockList;

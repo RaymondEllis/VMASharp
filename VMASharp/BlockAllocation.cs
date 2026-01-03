@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 
 namespace VMASharp;
+
 public sealed class BlockAllocation : Allocation
 {
 	internal VulkanMemoryBlock Block;

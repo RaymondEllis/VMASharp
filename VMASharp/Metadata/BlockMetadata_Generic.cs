@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace VMASharp.Metadata;
+
 internal sealed class BlockMetadata_Generic : IBlockMetadata
 {
 	private readonly List<LinkedListNode<Suballocation>> freeSuballocationsBySize = new();

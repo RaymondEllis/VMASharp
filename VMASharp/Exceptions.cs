@@ -2,6 +2,7 @@
 using System;
 
 namespace VMASharp;
+
 public class VulkanResultException : ApplicationException
 {
 	public readonly Result? Result;

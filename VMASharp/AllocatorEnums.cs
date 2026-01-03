@@ -1,6 +1,7 @@
 ﻿using System;
 
 namespace VMASharp;
+
 [Flags]
 public enum AllocatorCreateFlags
 {

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Threading;
 
 namespace VMASharp;
+
 public struct AllocationBudget
 {
 	public long BlockBytes;

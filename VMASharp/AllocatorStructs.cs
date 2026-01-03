@@ -6,6 +6,7 @@ using VMASharp.Metadata;
 #pragma warning disable CA1815
 
 namespace VMASharp;
+
 public struct VulkanMemoryAllocatorCreateInfo
 {
 	/// <summary>
