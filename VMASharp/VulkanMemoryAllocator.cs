@@ -1163,7 +1163,7 @@ public sealed unsafe class VulkanMemoryAllocator : IDisposable
 
 			if (canContainBufferWithDeviceAddress)
 			{
-				allocFlagsInfo.Flags = MemoryAllocateFlags.AddressBit;
+				allocFlagsInfo.Flags = MemoryAllocateFlags.DeviceAddressBit;
 				allocFlagsInfo.PNext = allocInfo.PNext;
 				allocInfo.PNext = &allocFlagsInfo;
 			}
